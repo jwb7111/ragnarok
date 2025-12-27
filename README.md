@@ -56,17 +56,70 @@ PRD → Competitive Research → Architecture → Development → Testing → De
 
 ## Installation
 
-### Claude Code (Recommended)
+### Skill File Structure
 
-```bash
-# Copy to your skills directory
-git clone https://github.com/asklokesh/claudeskill-loki-mode.git ~/.claude/skills/loki-mode
+The skill consists of these key files:
+
+```
+claudeskill-loki-mode/
+├── SKILL.md              # ← THE SKILL (required) - Claude Code reads this
+├── references/
+│   ├── agents.md         # Agent definitions (referenced by skill)
+│   ├── deployment.md     # Deployment guides (referenced by skill)
+│   └── business-ops.md   # Business workflows (referenced by skill)
+├── examples/             # Test PRDs (optional)
+└── tests/                # Test suite (optional)
 ```
 
-### Manual Installation
+**`SKILL.md` is the actual skill file** that Claude Code reads. The `references/` folder contains supporting documentation.
 
-1. Download this repository
-2. Copy to `~/.claude/skills/loki-mode/` (personal) or `.claude/skills/loki-mode/` (project)
+### Option 1: Download from Releases (Recommended)
+
+1. Go to [Releases](https://github.com/asklokesh/claudeskill-loki-mode/releases)
+2. Download the latest `loki-mode-X.X.X.zip`
+3. Extract and copy to your skills directory:
+
+```bash
+# For personal use (all projects)
+unzip loki-mode-*.zip
+mv loki-mode-*/ ~/.claude/skills/loki-mode
+
+# For a specific project only
+unzip loki-mode-*.zip
+mv loki-mode-*/ .claude/skills/loki-mode
+```
+
+### Option 2: Git Clone
+
+```bash
+# For personal use (all projects)
+git clone https://github.com/asklokesh/claudeskill-loki-mode.git ~/.claude/skills/loki-mode
+
+# For a specific project only
+git clone https://github.com/asklokesh/claudeskill-loki-mode.git .claude/skills/loki-mode
+```
+
+### Option 3: Minimal Install (Skill Only)
+
+If you only want the skill without examples/tests:
+
+```bash
+mkdir -p ~/.claude/skills/loki-mode/references
+curl -o ~/.claude/skills/loki-mode/SKILL.md https://raw.githubusercontent.com/asklokesh/claudeskill-loki-mode/main/SKILL.md
+curl -o ~/.claude/skills/loki-mode/references/agents.md https://raw.githubusercontent.com/asklokesh/claudeskill-loki-mode/main/references/agents.md
+curl -o ~/.claude/skills/loki-mode/references/deployment.md https://raw.githubusercontent.com/asklokesh/claudeskill-loki-mode/main/references/deployment.md
+curl -o ~/.claude/skills/loki-mode/references/business-ops.md https://raw.githubusercontent.com/asklokesh/claudeskill-loki-mode/main/references/business-ops.md
+```
+
+### Verify Installation
+
+```bash
+# Check the skill is in place
+ls ~/.claude/skills/loki-mode/SKILL.md
+
+# Or for project-level
+ls .claude/skills/loki-mode/SKILL.md
+```
 
 ## Usage
 
