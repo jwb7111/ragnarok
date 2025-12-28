@@ -5,6 +5,20 @@ All notable changes to Loki Mode will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2025-12-27
+
+### Added
+- **Vibe Kanban Integration** - Optional visual dashboard for monitoring agents:
+  - `integrations/vibe-kanban.md` - Full integration guide
+  - `scripts/export-to-vibe-kanban.sh` - Export Loki tasks to Vibe Kanban format
+  - Task status mapping (Loki queues → Kanban columns)
+  - Phase-to-column mapping for visual progress tracking
+  - Metadata preservation for debugging
+  - See [BloopAI/vibe-kanban](https://github.com/BloopAI/vibe-kanban)
+
+### Documentation
+- README: Added Integrations section with Vibe Kanban setup
+
 ## [2.1.0] - 2025-12-27
 
 ### Added
@@ -157,6 +171,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `references/deployment.md` - Cloud deployment guides
   - `references/business-ops.md` - Business operation workflows
 
+[2.2.0]: https://github.com/asklokesh/claudeskill-loki-mode/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/asklokesh/claudeskill-loki-mode/compare/v2.0.3...v2.1.0
 [2.0.3]: https://github.com/asklokesh/claudeskill-loki-mode/compare/v2.0.2...v2.0.3
 [2.0.2]: https://github.com/asklokesh/claudeskill-loki-mode/compare/v2.0.1...v2.0.2

@@ -312,6 +312,28 @@ The skill includes a comprehensive test suite:
 | State Recovery | None | Checkpoint/resume |
 | Alerting | None | Slack/PagerDuty |
 
+## Integrations
+
+### Vibe Kanban (Visual Dashboard)
+
+Optionally integrate with [Vibe Kanban](https://github.com/BloopAI/vibe-kanban) for a visual kanban board to monitor Loki Mode's agents:
+
+```bash
+# Install Vibe Kanban
+npx vibe-kanban
+
+# Export Loki tasks to Vibe Kanban
+./scripts/export-to-vibe-kanban.sh
+```
+
+Benefits:
+- Visual progress tracking of all 37 agents
+- Manual intervention/prioritization when needed
+- Code review with visual diffs
+- Multi-project dashboard
+
+See [integrations/vibe-kanban.md](integrations/vibe-kanban.md) for full setup guide.
+
 ## Contributing
 
 Contributions welcome! Please read the skill and open issues for bugs or feature requests.
