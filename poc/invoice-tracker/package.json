@@ -14,8 +14,13 @@
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "typecheck": "tsc --noEmit",
     "verify": "npm run lint && npm run typecheck && npm run test",
-    "validate:jurisdiction": "../scripts/validate-jurisdiction.sh",
-    "preflight": "npm run validate:jurisdiction && npm run verify"
+    "loki:validate-env": "../../scripts/validate-environment.sh",
+    "loki:bootstrap": "../../scripts/bootstrap-project.sh .",
+    "loki:validate-jurisdiction": "../../scripts/validate-jurisdiction.sh ./config/jurisdiction.yaml",
+    "loki:checkpoint": "../../scripts/checkpoint-manager.sh",
+    "loki:verify": "../../scripts/verify-task.sh verify",
+    "loki:preflight": "npm run loki:validate-env && npm run loki:validate-jurisdiction",
+    "loki:full-check": "npm run loki:preflight && npm run verify"
   },
   "dependencies": {
     "react": "^18.2.0",

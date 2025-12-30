@@ -1,0 +1,159 @@
+# Loki Mode Configuration for Invoice Tracker POC
+# Demonstrates integration with all Loki frameworks
+
+version: "1.0"
+project: "invoice-tracker-poc"
+
+# ============================================
+# AGENT MODEL
+# ============================================
+
+agents:
+  model_version: "v3"  # 12 capability-based agents
+
+  # Agents needed for this POC
+  required:
+    - implementer  # Frontend + backend development
+    - tester       # Unit and integration tests
+    - reviewer     # Code review
+    - deployer     # CI/CD and deployment
+    - compliance   # Legal/regulatory checks
+    - documenter   # Technical documentation
+
+  # Mode configurations
+  modes:
+    implementer:
+      default: "frontend"
+      allowed:
+        - frontend
+        - backend
+        - database
+    tester:
+      default: "unit"
+    reviewer:
+      default: "code_quality"
+      allowed:
+        - code_quality
+        - security
+        - business_logic
+
+# ============================================
+# CHECKPOINTS
+# ============================================
+
+checkpoints:
+  # Architecture decisions
+  architecture_review:
+    enabled: true
+    blocking: true
+    trigger:
+      phase: "architecture"
+    require_adr: true
+
+  # Before any deployment
+  pre_deploy:
+    enabled: true
+    blocking: true
+    trigger:
+      phase: "deployment"
+    require_verification: true
+
+  # Payment integration
+  payment_integration:
+    enabled: true
+    blocking: true
+    trigger:
+      feature: "payments"
+    require_security_review: true
+
+# ============================================
+# VERIFICATION
+# ============================================
+
+verification:
+  # All tasks must pass these
+  required_checks:
+    - build
+    - test
+    - lint
+    - typecheck
+
+  # Thresholds
+  thresholds:
+    test_coverage: 80
+    lint_errors: 0
+    type_errors: 0
+
+  # Timeout settings (seconds)
+  timeouts:
+    build: 120
+    test: 300
+    lint: 60
+    typecheck: 60
+
+# ============================================
+# CONTEXT PROFILES
+# ============================================
+
+context:
+  profile: "engineering"  # From config/context-profiles/
+
+  # POC-specific overrides
+  overrides:
+    testing:
+      coverage_threshold: 70  # Lower for POC
+    performance:
+      api_p99_ms: 500  # Relaxed for POC
+
+# ============================================
+# FAILURE HANDLING
+# ============================================
+
+failure_handling:
+  config: "../../config/failure-handlers.yaml"
+
+  # POC-specific settings
+  max_retries:
+    npm_install: 3
+    build: 2
+    test: 1
+
+  escalation:
+    method: "checkpoint"
+    checkpoint_type: "blocking"
+
+# ============================================
+# PHASES
+# ============================================
+
+phases:
+  - name: "discovery"
+    required_outputs:
+      - "PRD.md"
+      - ".loki/decisions/ADR-001-tech-stack.md"
+
+  - name: "architecture"
+    checkpoints:
+      - architecture_review
+    required_outputs:
+      - ".loki/reports/comprehension/phase-2-architecture.md"
+
+  - name: "development"
+    verification: true
+    parallel_agents:
+      - implementer:frontend
+      - implementer:backend
+
+  - name: "testing"
+    verification: true
+    required_checks:
+      - test
+      - lint
+
+  - name: "deployment"
+    checkpoints:
+      - pre_deploy
+    verification: true
+
+  - name: "finalized"
+    marker: ".loki/COMPLETED"

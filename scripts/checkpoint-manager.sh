@@ -145,8 +145,8 @@ wait_for_approval() {
 # Trigger a checkpoint and wait
 trigger_checkpoint() {
     local checkpoint_name="$1"
-    local description="$2"
-    local prompt="$3"
+    local description="${2:-}"
+    local prompt="${3:-Please review and approve to continue.}"
     local blocking="${4:-true}"
     local timeout="${5:-0}"
 

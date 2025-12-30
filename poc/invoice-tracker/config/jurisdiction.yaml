@@ -1,0 +1,105 @@
+# Invoice Tracker POC - Jurisdiction Configuration
+# This is a sample configuration demonstrating the legal/compliance framework
+
+version: "1.0"
+
+# ============================================
+# PRIMARY JURISDICTION
+# ============================================
+
+jurisdiction:
+  primary_country: "US"
+  primary_state: "CA"
+  city: "San Francisco"
+  entity_type: "LLC"
+
+# ============================================
+# TARGET MARKETS
+# ============================================
+
+target_markets:
+  countries:
+    - "US"
+  eu_users: false
+  california_users: true  # CCPA applies
+  children_under_13: false
+
+# ============================================
+# COMPLIANCE FRAMEWORKS
+# ============================================
+
+compliance:
+  gdpr:
+    enabled: false
+  ccpa:
+    enabled: true  # Required for California users
+  hipaa:
+    enabled: false
+  pci_dss:
+    enabled: true  # Invoice processing involves payments
+    level: "4"     # Lowest level for < 20k transactions/year
+  coppa:
+    enabled: false
+
+# ============================================
+# DATA HANDLING
+# ============================================
+
+data:
+  residency:
+    primary_region: "us-west-2"
+    backup_region: "us-east-1"
+
+  data_types:
+    personal_identifiable: true   # Customer names, emails
+    financial: true               # Invoice amounts, payment info
+    health: false
+    biometric: false
+    location: false
+    children: false
+
+  retention:
+    user_data_days: 2555  # 7 years for financial records
+    logs_days: 90
+    backups_days: 30
+
+  deletion:
+    enabled: true
+    response_days: 30
+
+# ============================================
+# PAYMENTS
+# ============================================
+
+payments:
+  enabled: true
+  processor: "stripe"
+  methods:
+    credit_card: true
+    bank_transfer: true
+    paypal: false
+    crypto: false
+  currencies:
+    - "USD"
+  regions:
+    - "US"
+  tax:
+    collect_vat: false
+    tax_service: "stripe_tax"
+
+# ============================================
+# COOKIES & TRACKING
+# ============================================
+
+cookies:
+  essential: true
+  analytics:
+    enabled: true
+    provider: "mixpanel"
+    requires_consent: true
+  marketing:
+    enabled: false
+  consent:
+    banner_required: true  # Best practice even for US-only
+    opt_in_required: false
+    granular_control: true

@@ -13,20 +13,69 @@ If successful, this POC demonstrates:
 - The 3-reviewer code review system catches issues
 - The verification system ensures code quality
 - Human intervention requirements are documented honestly
+- **All framework integrations work together**
+
+## Framework Integration
+
+This POC integrates all Loki Mode frameworks built in response to community feedback:
+
+| Framework | Status | Addresses |
+|-----------|--------|-----------|
+| Environment Bootstrap | ✅ Integrated | "npm install stuck" feedback |
+| Jurisdiction/Legal | ✅ Integrated | "Country/State required" feedback |
+| Checkpoint System | ✅ Integrated | "Human oversight" feedback |
+| Agent Model v3 | ✅ Integrated | "37 agents too many" feedback |
+| Verification System | ✅ Integrated | "Agents lie about progress" feedback |
+| Failure Handlers | ✅ Integrated | "Practical reliability" feedback |
+
+## Quick Start
+
+```bash
+# 1. Demo all framework integrations
+./scripts/demo-workflow.sh
+
+# 2. Run pre-flight checks
+npm run loki:preflight
+
+# 3. Bootstrap the project (with retry logic)
+npm run loki:bootstrap
+
+# 4. Run full verification
+npm run loki:full-check
+```
 
 ## How to Run This POC
 
 ### Prerequisites
-- Node.js 20+
+- Node.js 18+
 - Claude Code CLI installed
 - `--dangerously-skip-permissions` flag available
 
-### Running with Loki Mode
+### Step 1: Pre-flight Validation
 
 ```bash
-# Navigate to the POC directory
 cd poc/invoice-tracker
 
+# Validate environment
+npm run loki:validate-env
+
+# Validate jurisdiction config
+npm run loki:validate-jurisdiction
+```
+
+### Step 2: Bootstrap Project
+
+```bash
+# Install dependencies with retry logic
+npm run loki:bootstrap
+
+# Or manually:
+npm install
+```
+
+### Step 3: Run with Loki Mode
+
+```bash
 # Run Loki Mode with the PRD
 claude --dangerously-skip-permissions -p "Loki Mode with PRD at ./PRD.md"
 ```
