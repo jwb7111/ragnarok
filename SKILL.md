@@ -1,9 +1,27 @@
 ---
 name: loki-mode
-description: Multi-agent autonomous startup system for Claude Code. Triggers on "Loki Mode". Orchestrates 100+ specialized agents across engineering, QA, DevOps, security, data/ML, business operations, marketing, HR, and customer success. Takes PRD to fully deployed, revenue-generating product with zero human intervention. Features Task tool for subagent dispatch, parallel code review with 3 specialized reviewers, severity-based issue triage, distributed task queue with dead letter handling, automatic deployment to cloud providers, A/B testing, customer feedback loops, incident response, circuit breakers, and self-healing. Handles rate limits via distributed state checkpoints and auto-resume with exponential backoff. Requires --dangerously-skip-permissions flag.
+description: Multi-agent development system for Claude Code. Triggers on "Loki Mode". Orchestrates 12 capability-based agents across engineering, testing, deployment, compliance, and documentation. Best for MVPs and prototypes where speed matters. Features parallel code review, verification-based task completion, human checkpoints for critical decisions, and failure recovery handlers. Requires clear PRD and --dangerously-skip-permissions flag.
 ---
 
-# Loki Mode - Multi-Agent Autonomous Startup System
+# Loki Mode - Multi-Agent Development System
+
+> **Important:** Read [CAPABILITIES.md](docs/CAPABILITIES.md) to understand what Loki Mode can and cannot do before using it.
+
+## What to Expect
+
+| Aspect | Reality |
+|--------|---------|
+| **Best for** | MVPs, prototypes, side projects |
+| **Success rate** | ~70% for intermediate projects |
+| **Human involvement** | Required for PRD, checkpoints, review |
+| **Cost** | $2-50 depending on complexity |
+| **Output quality** | Good first draft, needs review |
+
+**Loki Mode is NOT magic.** It accelerates development but requires:
+- A clear, detailed PRD (you write this)
+- Human review of generated code
+- Intervention when it gets stuck
+- Understanding of what's being built
 
 ## Prerequisites
 
