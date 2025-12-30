@@ -310,6 +310,89 @@ export LOKI_DEV_MODE=1
 # Production deployments MUST have jurisdiction configured
 ```
 
+## Environment Bootstrap Protocol
+
+**Problem:** "What happens when the first dev agent gets stuck installing npm?" - Forsaken-Promise-269
+
+**Solution:** Validate environment BEFORE starting, use intelligent retry logic for common failures.
+
+### Pre-flight Validation
+
+Run environment validation as the FIRST step of any Loki Mode session:
+
+```bash
+# Validate development environment
+./scripts/validate-environment.sh
+
+# Checks:
+# - Node.js >= 18
+# - npm installed
+# - Git installed
+# - Disk space >= 2GB
+# - Write permissions
+# - Network connectivity
+```
+
+### Project Bootstrap
+
+Use the bootstrap script for dependency installation with retry logic:
+
+```bash
+# Bootstrap a project (handles npm install with retries)
+./scripts/bootstrap-project.sh ./path/to/project
+
+# What it does:
+# 1. Validates environment
+# 2. Detects package manager (npm/yarn/pnpm)
+# 3. Attempts install with progressive fallbacks:
+#    - Normal install
+#    - Clear cache + retry
+#    - Delete node_modules + --legacy-peer-deps
+#    - Fall back to alternative package manager
+# 4. Verifies installation
+# 5. Creates bootstrap marker
+```
+
+### Failure Handlers
+
+Common failures have automatic handlers configured in `config/failure-handlers.yaml`:
+
+| Failure | Actions |
+|---------|---------|
+| `npm install` fails | Clear cache → Delete node_modules → Legacy deps → Try yarn/pnpm |
+| Build fails | Type check → Clear cache → Reinstall deps |
+| Port in use | Find process → Kill → Use next port |
+| Git conflict | Abort merge → Stash → Pull → Pop stash |
+| Out of memory | Increase heap size → Clear caches |
+
+### Escalation
+
+After max retries, failures escalate to human via checkpoint:
+
+```yaml
+# In failure-handlers.yaml
+escalation:
+  human:
+    method: "checkpoint"
+    checkpoint_type: "blocking"
+```
+
+### Bootstrap Verification
+
+After successful bootstrap, a marker is created:
+
+```json
+// .loki/validation/bootstrap.json
+{
+  "bootstrapped_at": "2025-01-15T10:30:00Z",
+  "package_manager": "npm",
+  "packages_installed": 847,
+  "status": "success"
+}
+```
+
+Agents should check for this marker before attempting to run build/test commands.
+
 ## Codebase Analysis Mode (No PRD Provided)
 
 When Loki Mode is invoked WITHOUT a PRD, it operates in **Codebase Analysis Mode**:

@@ -1,0 +1,261 @@
+# Failure Handlers Configuration
+# Addresses: "What happens when the first dev agent gets stuck installing npm?"
+# - Forsaken-Promise-269
+
+version: "1.0"
+
+# ============================================
+# NPM/PACKAGE MANAGER FAILURES
+# ============================================
+
+failure_handlers:
+  npm_install:
+    description: "Handle npm install failures"
+    detection:
+      exit_code: "!= 0"
+      stderr_contains:
+        - "npm ERR"
+        - "ERESOLVE"
+        - "ENOENT"
+        - "peer dep"
+    actions:
+      - name: "clear_npm_cache"
+        command: "npm cache clean --force"
+        description: "Clear corrupted npm cache"
+
+      - name: "delete_node_modules"
+        command: "rm -rf node_modules package-lock.json"
+        description: "Remove node_modules and lockfile"
+
+      - name: "retry_with_legacy"
+        command: "npm install --legacy-peer-deps"
+        description: "Retry with legacy peer deps resolution"
+
+      - name: "try_yarn"
+        command: "yarn install"
+        condition: "command -v yarn"
+        description: "Fall back to yarn"
+
+      - name: "try_pnpm"
+        command: "pnpm install"
+        condition: "command -v pnpm"
+        description: "Fall back to pnpm"
+
+    max_retries: 3
+    timeout_seconds: 300
+    escalate_to: "human"
+
+# ============================================
+# BUILD FAILURES
+# ============================================
+
+  build_failure:
+    description: "Handle build/compile failures"
+    detection:
+      exit_code: "!= 0"
+      command_contains:
+        - "build"
+        - "compile"
+        - "tsc"
+    actions:
+      - name: "check_types_first"
+        command: "npx tsc --noEmit 2>&1 | head -50"
+        description: "Run type check to find real error"
+
+      - name: "clear_build_cache"
+        command: "rm -rf .next/cache dist/ build/ .turbo/"
+        description: "Clear build caches"
+
+      - name: "reinstall_deps"
+        command: "rm -rf node_modules && npm install"
+        description: "Clean reinstall dependencies"
+
+      - name: "check_node_version"
+        command: "node -v && cat package.json | grep 'engines' -A 5"
+        description: "Verify node version matches requirements"
+
+    max_retries: 2
+    timeout_seconds: 600
+    escalate_to: "human"
+
+# ============================================
+# PORT/NETWORK FAILURES
+# ============================================
+
+  port_in_use:
+    description: "Handle port already in use errors"
+    detection:
+      stderr_contains:
+        - "EADDRINUSE"
+        - "address already in use"
+        - "port is already allocated"
+    actions:
+      - name: "find_process"
+        command: "lsof -i :${PORT:-3000} | grep LISTEN"
+        description: "Find process using the port"
+
+      - name: "kill_process"
+        command: "lsof -ti :${PORT:-3000} | xargs kill -9 2>/dev/null || true"
+        description: "Kill process using the port"
+        requires_confirmation: true
+
+      - name: "use_next_port"
+        command: "PORT=$((${PORT:-3000} + 1)) npm run dev"
+        description: "Try the next port"
+
+    max_retries: 3
+    timeout_seconds: 30
+
+# ============================================
+# GIT FAILURES
+# ============================================
+
+  git_conflict:
+    description: "Handle git merge/rebase conflicts"
+    detection:
+      stderr_contains:
+        - "CONFLICT"
+        - "Merge conflict"
+        - "could not apply"
+    actions:
+      - name: "abort_merge"
+        command: "git merge --abort 2>/dev/null || git rebase --abort 2>/dev/null || true"
+        description: "Abort current merge/rebase"
+
+      - name: "stash_changes"
+        command: "git stash"
+        description: "Stash local changes"
+
+      - name: "pull_fresh"
+        command: "git pull --rebase origin $(git branch --show-current)"
+        description: "Pull with rebase"
+
+      - name: "pop_stash"
+        command: "git stash pop"
+        description: "Restore stashed changes"
+
+    max_retries: 2
+    escalate_to: "human"
+    escalate_after: 1  # Escalate after first failure
+
+  git_push_rejected:
+    description: "Handle push rejection"
+    detection:
+      stderr_contains:
+        - "rejected"
+        - "non-fast-forward"
+        - "fetch first"
+    actions:
+      - name: "fetch_first"
+        command: "git fetch origin"
+        description: "Fetch remote changes"
+
+      - name: "rebase_on_remote"
+        command: "git rebase origin/$(git branch --show-current)"
+        description: "Rebase on remote branch"
+
+    max_retries: 2
+    escalate_to: "human"
+
+# ============================================
+# TEST FAILURES
+# ============================================
+
+  test_failure:
+    description: "Handle test failures"
+    detection:
+      exit_code: "!= 0"
+      command_contains:
+        - "test"
+        - "vitest"
+        - "jest"
+        - "pytest"
+    actions:
+      - name: "run_verbose"
+        command: "npm test -- --verbose 2>&1 | tail -100"
+        description: "Re-run with verbose output"
+
+      - name: "run_single_file"
+        command: "npm test -- --testPathPattern='${FAILED_TEST}'"
+        description: "Run only the failing test"
+        condition: "test -n '${FAILED_TEST}'"
+
+      - name: "clear_test_cache"
+        command: "npx jest --clearCache 2>/dev/null || rm -rf .vitest/ coverage/"
+        description: "Clear test cache"
+
+    max_retries: 1
+    escalate_to: "reviewer:code_quality"
+
+# ============================================
+# TIMEOUT/HANG FAILURES
+# ============================================
+
+  process_timeout:
+    description: "Handle stuck/hanging processes"
+    detection:
+      timeout: true
+    actions:
+      - name: "kill_stuck_process"
+        command: "pkill -f '${COMMAND}' || true"
+        description: "Kill the stuck process"
+
+      - name: "check_resources"
+        command: "free -h && df -h . && top -bn1 | head -20"
+        description: "Check system resources"
+
+    max_retries: 1
+    escalate_to: "human"
+
+# ============================================
+# MEMORY/RESOURCE FAILURES
+# ============================================
+
+  out_of_memory:
+    description: "Handle out of memory errors"
+    detection:
+      stderr_contains:
+        - "ENOMEM"
+        - "JavaScript heap out of memory"
+        - "Killed"
+    actions:
+      - name: "increase_node_memory"
+        command: "export NODE_OPTIONS='--max-old-space-size=4096'"
+        description: "Increase Node.js heap size"
+
+      - name: "clear_caches"
+        command: "npm cache clean --force && rm -rf node_modules/.cache"
+        description: "Clear all caches"
+
+    max_retries: 1
+    escalate_to: "human"
+
+# ============================================
+# ESCALATION SETTINGS
+# ============================================
+
+escalation:
+  human:
+    description: "Escalate to human operator"
+    method: "checkpoint"
+    checkpoint_type: "blocking"
+    message_template: |
+      ## Failure Escalation
+
+      **Handler:** ${HANDLER_NAME}
+      **Error:** ${ERROR_MESSAGE}
+      **Attempts:** ${ATTEMPT_COUNT}/${MAX_RETRIES}
+
+      ### Actions Tried
+      ${ACTIONS_TRIED}
+
+      ### Suggested Next Steps
+      1. Check the logs in `.loki/logs/`
+      2. Verify environment with `./scripts/validate-environment.sh`
+      3. Manual intervention may be required
+
+  reviewer:
+    description: "Escalate to review agent"
+    method: "spawn_agent"
+    agent_type: "reviewer"
+    mode: "code_quality"
