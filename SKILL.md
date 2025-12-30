@@ -40,6 +40,120 @@ claude --dangerously-skip-permissions
 
 **If project is complete:** Do NOT ask "What would you like to do next?" Instead, create the `.loki/COMPLETED` file and provide a final status report. The system will exit cleanly.
 
+## Human Understanding Protocol
+
+While Loki Mode operates autonomously, it must ensure humans can understand what's being built. This addresses the core concern: "Having a 20k+ LOC app that no one understands."
+
+### Architecture Decision Records (ADRs)
+
+Every significant decision must be documented:
+
+```bash
+# ADR location
+.loki/decisions/
+├── ADR-001-tech-stack.md
+├── ADR-002-database-schema.md
+├── ADR-003-auth-strategy.md
+└── index.json
+```
+
+**When to create an ADR:**
+- Tech stack selection
+- Database schema design
+- Authentication/authorization approach
+- Third-party service integration
+- Major architectural patterns
+- Any decision affecting > 5 files
+
+**ADR Template:** See `templates/adr/TEMPLATE.md`
+
+### Comprehension Reports
+
+After every phase completion, generate a human-readable summary:
+
+```bash
+# Report location
+.loki/reports/comprehension/
+├── phase-1-discovery.md
+├── phase-2-architecture.md
+├── phase-4-development.md
+└── ...
+```
+
+**Report sections:**
+1. **What Was Built** - Plain English description
+2. **Why These Choices** - Links to ADRs
+3. **How It Works** - Key flows explained
+4. **Where to Find Things** - File/folder guide
+5. **Known Limitations** - Tech debt acknowledged
+6. **Suggested Reading Order** - For new developers
+
+**Template:** See `templates/reports/comprehension-report.md`
+
+### Human Checkpoints
+
+Configurable approval gates for critical decisions:
+
+```yaml
+# Checkpoint configuration
+.loki/config/checkpoints.yaml
+
+checkpoints:
+  architecture_review:
+    enabled: true
+    blocking: true
+    trigger: "phase == 'architecture'"
+
+  pre_deployment:
+    enabled: true
+    blocking: true
+    trigger: "phase == 'deployment'"
+
+  high_cost_operation:
+    enabled: true
+    blocking: true
+    trigger: "estimated_cost > $10"
+```
+
+**Checkpoint types:**
+- **Blocking:** System pauses until `.loki/checkpoints/{name}.approved` exists
+- **Informational:** Generate report, continue automatically
+
+**To approve a checkpoint:**
+```bash
+# Via file
+touch .loki/checkpoints/architecture_review.approved
+
+# Via script
+./scripts/checkpoint-manager.sh approve architecture_review "Looks good"
+```
+
+**To skip all checkpoints (emergency):**
+```bash
+export LOKI_SKIP_CHECKPOINTS=1
+# Requires confirmation phrase in production
+```
+
+### When Human Input Is Required
+
+Even in autonomous mode, these always require human involvement:
+- Architecture decisions affecting > 5 files → Generate ADR, create checkpoint
+- Any external API integration → Security review checkpoint
+- Database schema changes → Migration review checkpoint
+- Deployment configurations → Pre-deploy checkpoint
+- Estimated cost > $10 → Cost approval checkpoint
+- Security-sensitive operations → Security checkpoint
+
+### Understanding Verification
+
+After every 10 tasks, generate a mini-report answering:
+1. What was the goal of the last 10 tasks?
+2. What files were changed and why?
+3. What decisions were made?
+4. What's the current state of the project?
+
+This ensures continuous documentation, not just end-of-phase reports.
+
 ## Codebase Analysis Mode (No PRD Provided)
 
 When Loki Mode is invoked WITHOUT a PRD, it operates in **Codebase Analysis Mode**:

@@ -1,0 +1,263 @@
+# Human-in-the-Loop Checkpoint Configuration
+# Controls when Loki Mode pauses for human review/approval
+
+version: "1.0"
+
+# Global settings
+settings:
+  # Enable/disable all checkpoints globally
+  enabled: true
+
+  # How to notify when checkpoint is reached
+  notification:
+    method: file  # file | slack | email
+    file_path: ".loki/checkpoints/WAITING_FOR_APPROVAL.md"
+
+  # Timeout before auto-proceeding (0 = wait forever)
+  auto_proceed_timeout_minutes: 0
+
+  # Log all checkpoint decisions
+  audit_log: ".loki/logs/checkpoint-decisions.log"
+
+# Checkpoint definitions
+checkpoints:
+
+  # ============================================
+  # ARCHITECTURE CHECKPOINTS
+  # ============================================
+
+  architecture_review:
+    enabled: true
+    blocking: true  # Must approve to continue
+    trigger:
+      phase: "architecture"
+      event: "tech_stack_selected"
+    description: "Review proposed architecture and tech stack before implementation"
+    prompt: |
+      ## Architecture Review Required
+
+      The following architecture decisions have been made:
+      - Review: .loki/reports/architecture-proposal.md
+      - ADRs: .loki/decisions/
+
+      Please review and approve to continue.
+    approval_file: ".loki/checkpoints/architecture.approved"
+    required_reviewers: 1
+
+  database_schema:
+    enabled: true
+    blocking: true
+    trigger:
+      phase: "development"
+      event: "schema_created"
+    description: "Review database schema before migrations"
+    prompt: |
+      ## Database Schema Review Required
+
+      Review the proposed schema:
+      - Schema: prisma/schema.prisma (or equivalent)
+      - Migration: .loki/reports/schema-review.md
+
+      This affects data structure permanently.
+    approval_file: ".loki/checkpoints/schema.approved"
+    required_reviewers: 1
+
+  # ============================================
+  # SECURITY CHECKPOINTS
+  # ============================================
+
+  security_sensitive:
+    enabled: true
+    blocking: true
+    trigger:
+      file_patterns:
+        - "**/auth/**"
+        - "**/security/**"
+        - "**/*.env*"
+        - "**/secrets/**"
+    description: "Security-sensitive code requires review"
+    prompt: |
+      ## Security Review Required
+
+      Security-sensitive files have been modified.
+      Review: .loki/reports/security-changes.md
+    approval_file: ".loki/checkpoints/security.approved"
+    required_reviewers: 1
+
+  external_api_integration:
+    enabled: true
+    blocking: true
+    trigger:
+      event: "external_api_added"
+    description: "External API integrations need approval"
+    prompt: |
+      ## External API Integration Review
+
+      A new external API integration is being added.
+      Review: .loki/reports/api-integration.md
+
+      Consider: rate limits, costs, data privacy implications.
+    approval_file: ".loki/checkpoints/api-integration.approved"
+    required_reviewers: 1
+
+  # ============================================
+  # COST CHECKPOINTS
+  # ============================================
+
+  high_cost_operation:
+    enabled: true
+    blocking: true
+    trigger:
+      estimated_cost_usd: 10  # Trigger if cost > $10
+    description: "High-cost operations require approval"
+    prompt: |
+      ## High Cost Operation
+
+      Estimated cost: ${ESTIMATED_COST}
+      Operation: ${OPERATION_DESCRIPTION}
+
+      Approve to proceed.
+    approval_file: ".loki/checkpoints/cost.approved"
+    required_reviewers: 1
+
+  cloud_resource_provision:
+    enabled: true
+    blocking: true
+    trigger:
+      event: "cloud_resource_create"
+    description: "Cloud resource provisioning requires approval"
+    prompt: |
+      ## Cloud Resource Creation
+
+      The following cloud resources will be created:
+      - Review: .loki/reports/cloud-resources.md
+
+      This may incur ongoing costs.
+    approval_file: ".loki/checkpoints/cloud.approved"
+    required_reviewers: 1
+
+  # ============================================
+  # DEPLOYMENT CHECKPOINTS
+  # ============================================
+
+  pre_deployment:
+    enabled: true
+    blocking: true
+    trigger:
+      phase: "deployment"
+      event: "deploy_ready"
+    description: "Pre-deployment review before going live"
+    prompt: |
+      ## Deployment Review Required
+
+      Ready to deploy to: ${ENVIRONMENT}
+
+      Review checklist:
+      - [ ] All tests passing
+      - [ ] Security scan clean
+      - [ ] Performance acceptable
+      - [ ] Rollback plan documented
+
+      Review: .loki/reports/deployment-plan.md
+    approval_file: ".loki/checkpoints/deploy.approved"
+    required_reviewers: 1
+
+  production_deployment:
+    enabled: true
+    blocking: true
+    trigger:
+      environment: "production"
+    description: "Production deployments always require approval"
+    prompt: |
+      ## PRODUCTION DEPLOYMENT
+
+      This will deploy to PRODUCTION.
+
+      Ensure:
+      - Staging tested and verified
+      - Monitoring configured
+      - Rollback tested
+
+      Type 'DEPLOY PRODUCTION' in approval file to confirm.
+    approval_file: ".loki/checkpoints/production.approved"
+    required_reviewers: 1
+    confirmation_phrase: "DEPLOY PRODUCTION"
+
+  # ============================================
+  # DATA CHECKPOINTS
+  # ============================================
+
+  data_migration:
+    enabled: true
+    blocking: true
+    trigger:
+      event: "data_migration"
+    description: "Data migrations require approval"
+    prompt: |
+      ## Data Migration Review
+
+      A data migration will be run.
+      Review: .loki/reports/migration-plan.md
+
+      Ensure backup exists before proceeding.
+    approval_file: ".loki/checkpoints/migration.approved"
+    required_reviewers: 1
+
+  # ============================================
+  # INFORMATIONAL CHECKPOINTS (Non-blocking)
+  # ============================================
+
+  phase_complete:
+    enabled: true
+    blocking: false  # Informational only
+    trigger:
+      event: "phase_complete"
+    description: "Notification when a phase completes"
+    prompt: |
+      ## Phase Complete: ${PHASE_NAME}
+
+      Summary: .loki/reports/comprehension/${PHASE_NAME}.md
+
+      Continuing to next phase...
+    log_only: true
+
+  milestone_reached:
+    enabled: true
+    blocking: false
+    trigger:
+      tasks_completed_count: 10  # Every 10 tasks
+    description: "Progress milestone notification"
+    prompt: |
+      ## Milestone: ${TASK_COUNT} Tasks Completed
+
+      Progress report: .loki/reports/progress-${TIMESTAMP}.md
+    log_only: true
+
+# Approval workflow
+approval:
+  # How approvals are granted
+  method: file  # file | api | cli
+
+  # File-based approval
+  file_approval:
+    # Create this file to approve
+    marker: ".approved"
+    # Required content (optional)
+    content_required: false
+
+  # Approval expiry
+  expiry:
+    enabled: false
+    duration_hours: 24
+
+# Emergency override
+emergency:
+  # Skip all checkpoints with this env var
+  skip_env_var: "LOKI_SKIP_CHECKPOINTS"
+
+  # Log when checkpoints are skipped
+  log_skips: true
+
+  # Require confirmation phrase for emergency skip
+  confirmation_required: true
+  confirmation_phrase: "I UNDERSTAND THE RISKS"
