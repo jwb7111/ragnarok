@@ -1,0 +1,206 @@
+# Engineering Context Profile
+# Shared constraints, NFRs, and standards for all engineering work
+
+name: engineering
+version: "1.0"
+description: |
+  Context profile for all engineering agents (implementer, tester, optimizer).
+  Defines the vocabulary, constraints, and standards that ensure consistent
+  code across all agents.
+
+# ============================================
+# VOCABULARY
+# ============================================
+# Consistent terminology across all engineering work
+
+vocabulary:
+  component: "A React functional component with TypeScript props interface"
+  service: "A backend module that encapsulates business logic, accessed via API"
+  model: "A Prisma database model definition"
+  route: "A Next.js API route or page route"
+  hook: "A React custom hook for reusable stateful logic"
+  utility: "A pure function in /lib or /utils with no side effects"
+  middleware: "Request processing function that runs before route handlers"
+  schema: "A Zod validation schema for type-safe parsing"
+
+# ============================================
+# CONSTRAINTS
+# ============================================
+# Rules that MUST be followed by all engineering agents
+
+constraints:
+  typescript:
+    - "All code must be TypeScript (.ts or .tsx)"
+    - "No 'any' types without explicit // @ts-expect-error comment with reason"
+    - "All function parameters must have explicit types"
+    - "All exported functions must have JSDoc comments"
+    - "Strict mode enabled (strict: true in tsconfig.json)"
+
+  code_style:
+    - "Maximum function length: 50 lines"
+    - "Maximum file length: 300 lines"
+    - "Maximum nesting depth: 4 levels"
+    - "No console.log in production code (use logger)"
+    - "No commented-out code"
+    - "Prefer named exports over default exports"
+
+  patterns:
+    - "Use async/await over .then() chains"
+    - "Use try/catch for all async operations"
+    - "Use early returns to reduce nesting"
+    - "Use const by default, let only when mutation needed"
+    - "Destructure objects and arrays where it improves readability"
+
+  security:
+    - "Never hardcode secrets, API keys, or passwords"
+    - "Always validate and sanitize user input"
+    - "Use parameterized queries, never string concatenation for SQL"
+    - "Always set httpOnly on auth cookies"
+    - "Never expose stack traces in production errors"
+
+  testing:
+    - "Write tests before implementation (TDD)"
+    - "Each function must have at least one unit test"
+    - "Test edge cases: empty input, null, undefined, boundary values"
+    - "Mock external services, never call real APIs in tests"
+
+# ============================================
+# NON-FUNCTIONAL REQUIREMENTS (NFRs)
+# ============================================
+# Performance and quality targets
+
+nfrs:
+  performance:
+    api_response_time_p99: "< 200ms"
+    page_load_time: "< 2 seconds"
+    time_to_first_byte: "< 500ms"
+    database_query_time: "< 100ms"
+
+  reliability:
+    uptime_target: "99.9%"
+    error_rate: "< 0.1%"
+    recovery_time: "< 5 minutes"
+
+  scalability:
+    concurrent_users: ">= 1000"
+    requests_per_second: ">= 100"
+
+  code_quality:
+    test_coverage: ">= 80%"
+    type_coverage: "100%"
+    lint_errors: "0"
+    security_vulnerabilities: "0 high/critical"
+
+# ============================================
+# STANDARDS
+# ============================================
+# Configuration and tooling standards
+
+standards:
+  linting:
+    tool: "ESLint"
+    config: ".eslintrc.js"
+    extends:
+      - "next/core-web-vitals"
+      - "plugin:@typescript-eslint/recommended"
+
+  formatting:
+    tool: "Prettier"
+    config: ".prettierrc"
+    settings:
+      semi: false
+      singleQuote: true
+      tabWidth: 2
+      trailingComma: "es5"
+
+  testing:
+    unit: "Jest"
+    e2e: "Playwright"
+    coverage_tool: "c8 or jest --coverage"
+
+  git:
+    commit_format: "Conventional Commits"
+    branch_naming: "feature/, bugfix/, hotfix/"
+    require_tests: true
+    require_lint: true
+
+  documentation:
+    functions: "JSDoc comments required"
+    api: "OpenAPI/Swagger spec"
+    readme: "Must include setup, usage, testing sections"
+
+# ============================================
+# FILE ORGANIZATION
+# ============================================
+
+file_organization:
+  src:
+    app: "Next.js App Router pages and layouts"
+    components: "React components (PascalCase.tsx)"
+    lib: "Utility functions and shared logic"
+    hooks: "Custom React hooks (use*.ts)"
+    types: "TypeScript type definitions"
+    services: "Business logic services"
+
+  api:
+    location: "src/app/api/"
+    naming: "[resource]/route.ts"
+
+  tests:
+    location: "__tests__/ or *.test.ts adjacent to source"
+    naming: "[name].test.ts"
+
+# ============================================
+# ERROR HANDLING
+# ============================================
+
+error_handling:
+  api_errors:
+    format: "{ error: string, code: string, details?: object }"
+    status_codes:
+      - "400: Validation errors"
+      - "401: Authentication required"
+      - "403: Permission denied"
+      - "404: Resource not found"
+      - "500: Internal server error"
+
+  client_errors:
+    display: "User-friendly message"
+    log: "Full error with stack trace"
+    report: "To error tracking service (if configured)"
+
+# ============================================
+# LOGGING
+# ============================================
+
+logging:
+  levels:
+    - "error: Failures that need attention"
+    - "warn: Potential issues"
+    - "info: Significant events"
+    - "debug: Detailed debugging (dev only)"
+
+  format: "JSON structured logging"
+  required_fields:
+    - "timestamp"
+    - "level"
+    - "message"
+    - "requestId (if applicable)"
+
+# ============================================
+# DEPENDENCIES
+# ============================================
+
+dependencies:
+  approval_required:
+    - "Any package with < 1000 weekly downloads"
+    - "Any package deprecated or unmaintained"
+    - "Any package with known vulnerabilities"
+
+  preferred:
+    validation: "zod"
+    database: "prisma"
+    auth: "jose (JWT)"
+    forms: "react-hook-form"
+    styling: "tailwindcss"
+    testing: "jest, playwright"

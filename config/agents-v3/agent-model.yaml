@@ -1,0 +1,575 @@
+# Agent Model v3.0
+# Consolidated capability-based agents (12 core agents replacing 37 role-based agents)
+#
+# Philosophy: "Agents should reflect thinking patterns, not job titles" - darkflib
+#
+# Each agent has multiple MODES rather than being narrowly specialized.
+# This reduces complexity while maintaining capability coverage.
+
+version: "3.0"
+description: |
+  Consolidated agent model that replaces the 37 role-based agents with
+  12 capability-based agents. Each agent can operate in multiple modes,
+  switching context as needed rather than spawning separate agents.
+
+# ============================================
+# CORE AGENTS (12 total)
+# ============================================
+
+agents:
+
+  # ------------------------------------------
+  # 1. ARCHITECT
+  # ------------------------------------------
+  architect:
+    description: "Designs systems, makes architectural decisions, creates ADRs"
+    context_profiles:
+      - engineering
+      - security
+    modes:
+      system_design:
+        description: "Design overall system architecture"
+        capabilities:
+          - "Tech stack selection"
+          - "Database design"
+          - "API design"
+          - "Service boundaries"
+      component_design:
+        description: "Design individual components/modules"
+        capabilities:
+          - "Component interfaces"
+          - "Data flow design"
+          - "State management patterns"
+      security_architecture:
+        description: "Design security model"
+        capabilities:
+          - "Auth architecture"
+          - "Data protection strategy"
+          - "Threat modeling"
+    outputs:
+      - "ADRs (Architecture Decision Records)"
+      - "System diagrams"
+      - "Tech stack recommendations"
+      - "Component specifications"
+    model_preference: "opus"  # Deep analysis required
+
+  # ------------------------------------------
+  # 2. IMPLEMENTER
+  # ------------------------------------------
+  implementer:
+    description: "Writes code across any stack"
+    context_profiles:
+      - engineering
+    modes:
+      frontend:
+        description: "Frontend implementation"
+        capabilities:
+          - "React/Vue/Svelte components"
+          - "TypeScript/JavaScript"
+          - "CSS/Tailwind styling"
+          - "State management"
+          - "Accessibility"
+      backend:
+        description: "Backend implementation"
+        capabilities:
+          - "API endpoints"
+          - "Business logic"
+          - "Database queries"
+          - "Authentication"
+          - "Middleware"
+      database:
+        description: "Database implementation"
+        capabilities:
+          - "Schema design"
+          - "Migrations"
+          - "Query optimization"
+          - "Indexing"
+          - "Seed data"
+      mobile:
+        description: "Mobile implementation"
+        capabilities:
+          - "React Native"
+          - "Flutter"
+          - "Native modules"
+          - "Offline support"
+      infrastructure:
+        description: "Infrastructure as code"
+        capabilities:
+          - "Dockerfile creation"
+          - "K8s manifests"
+          - "Terraform/Pulumi"
+          - "CI/CD configs"
+    outputs:
+      - "Source code files"
+      - "Test files (TDD)"
+      - "Configuration files"
+    model_preference: "sonnet"  # Fast implementation
+    constraints:
+      - "Must write tests before implementation"
+      - "Must follow context profile standards"
+      - "Must commit with conventional commits"
+
+  # ------------------------------------------
+  # 3. TESTER
+  # ------------------------------------------
+  tester:
+    description: "Creates and runs all types of tests"
+    context_profiles:
+      - engineering
+    modes:
+      unit:
+        description: "Unit testing"
+        capabilities:
+          - "Jest/Vitest tests"
+          - "Mocking"
+          - "Coverage analysis"
+      integration:
+        description: "Integration testing"
+        capabilities:
+          - "API testing"
+          - "Database integration"
+          - "Service integration"
+      e2e:
+        description: "End-to-end testing"
+        capabilities:
+          - "Playwright/Cypress"
+          - "User flow testing"
+          - "Visual regression"
+      performance:
+        description: "Performance testing"
+        capabilities:
+          - "Load testing (k6)"
+          - "Benchmarking"
+          - "Profiling"
+    outputs:
+      - "Test files"
+      - "Coverage reports"
+      - "Performance benchmarks"
+    model_preference: "sonnet"
+
+  # ------------------------------------------
+  # 4. REVIEWER
+  # ------------------------------------------
+  reviewer:
+    description: "Reviews code for quality, security, and correctness"
+    context_profiles:
+      - engineering
+      - security
+    modes:
+      code_quality:
+        description: "Code quality review"
+        focus:
+          - "Design patterns"
+          - "SOLID principles"
+          - "Maintainability"
+          - "DRY/KISS"
+          - "Code smells"
+      security:
+        description: "Security review"
+        focus:
+          - "OWASP Top 10"
+          - "Auth/authz flaws"
+          - "Input validation"
+          - "Secret exposure"
+          - "Dependency vulnerabilities"
+      business_logic:
+        description: "Business logic review"
+        focus:
+          - "Requirements alignment"
+          - "Edge case handling"
+          - "Domain correctness"
+          - "Acceptance criteria"
+    outputs:
+      - "Review findings (JSON)"
+      - "Severity ratings"
+      - "Fix recommendations"
+    model_preference: "opus"  # Deep analysis critical
+    output_format:
+      type: "json"
+      schema:
+        strengths: "array"
+        issues: "array of {severity, description, location, suggestion}"
+        assessment: "PASS | FAIL"
+
+  # ------------------------------------------
+  # 5. DEPLOYER
+  # ------------------------------------------
+  deployer:
+    description: "Handles all deployment and infrastructure operations"
+    context_profiles:
+      - engineering
+      - operations
+    modes:
+      ci_cd:
+        description: "CI/CD pipeline management"
+        capabilities:
+          - "GitHub Actions"
+          - "GitLab CI"
+          - "Pipeline debugging"
+      cloud:
+        description: "Cloud deployments"
+        capabilities:
+          - "Vercel/Netlify"
+          - "AWS/GCP/Azure"
+          - "Railway/Render"
+      kubernetes:
+        description: "Kubernetes operations"
+        capabilities:
+          - "Helm charts"
+          - "K8s manifests"
+          - "Service mesh"
+      release:
+        description: "Release management"
+        capabilities:
+          - "Semantic versioning"
+          - "Changelog generation"
+          - "Blue-green deploys"
+          - "Rollbacks"
+    outputs:
+      - "Pipeline configurations"
+      - "Deployment scripts"
+      - "Release notes"
+    model_preference: "sonnet"
+
+  # ------------------------------------------
+  # 6. DOCUMENTER
+  # ------------------------------------------
+  documenter:
+    description: "Creates all forms of documentation"
+    context_profiles:
+      - engineering
+    modes:
+      api:
+        description: "API documentation"
+        capabilities:
+          - "OpenAPI specs"
+          - "Endpoint documentation"
+          - "SDK guides"
+      user:
+        description: "User documentation"
+        capabilities:
+          - "User guides"
+          - "Tutorials"
+          - "FAQs"
+      technical:
+        description: "Technical documentation"
+        capabilities:
+          - "Architecture docs"
+          - "README files"
+          - "Code comments"
+          - "ADRs"
+      release:
+        description: "Release documentation"
+        capabilities:
+          - "Release notes"
+          - "Changelogs"
+          - "Migration guides"
+    outputs:
+      - "Markdown documents"
+      - "OpenAPI specs"
+      - "Inline code comments"
+    model_preference: "sonnet"
+
+  # ------------------------------------------
+  # 7. RESEARCHER
+  # ------------------------------------------
+  researcher:
+    description: "Gathers information through web search and analysis"
+    context_profiles:
+      - engineering
+      - business
+    modes:
+      technical:
+        description: "Technical research"
+        capabilities:
+          - "Best practices lookup"
+          - "Library comparison"
+          - "Troubleshooting"
+      competitive:
+        description: "Competitive analysis"
+        capabilities:
+          - "Competitor features"
+          - "Market analysis"
+          - "User feedback research"
+      compliance:
+        description: "Compliance research"
+        capabilities:
+          - "Regulation lookup"
+          - "Standard requirements"
+          - "Legal requirements"
+    outputs:
+      - "Research reports"
+      - "Comparison matrices"
+      - "Recommendations with sources"
+    model_preference: "sonnet"
+    tools_required:
+      - "WebSearch"
+      - "WebFetch"
+
+  # ------------------------------------------
+  # 8. INTEGRATOR
+  # ------------------------------------------
+  integrator:
+    description: "Handles third-party service integrations"
+    context_profiles:
+      - engineering
+      - security
+    modes:
+      auth:
+        description: "Authentication integrations"
+        capabilities:
+          - "OAuth/OIDC"
+          - "SAML"
+          - "Social login"
+          - "SSO"
+      payment:
+        description: "Payment integrations"
+        capabilities:
+          - "Stripe"
+          - "PayPal"
+          - "Billing systems"
+      communication:
+        description: "Communication integrations"
+        capabilities:
+          - "Email (SendGrid, SES)"
+          - "SMS (Twilio)"
+          - "Push notifications"
+      analytics:
+        description: "Analytics integrations"
+        capabilities:
+          - "Google Analytics"
+          - "Mixpanel"
+          - "Custom events"
+    outputs:
+      - "Integration code"
+      - "Configuration"
+      - "Test credentials handling"
+    model_preference: "sonnet"
+    requires_checkpoint: true  # Always needs human approval
+
+  # ------------------------------------------
+  # 9. OPTIMIZER
+  # ------------------------------------------
+  optimizer:
+    description: "Improves performance, efficiency, and quality"
+    context_profiles:
+      - engineering
+    modes:
+      performance:
+        description: "Performance optimization"
+        capabilities:
+          - "Profiling"
+          - "Query optimization"
+          - "Caching strategies"
+          - "Bundle optimization"
+      cost:
+        description: "Cost optimization"
+        capabilities:
+          - "Resource right-sizing"
+          - "Usage analysis"
+          - "Cost reduction"
+      quality:
+        description: "Code quality improvement"
+        capabilities:
+          - "Refactoring"
+          - "Tech debt reduction"
+          - "Pattern improvements"
+    outputs:
+      - "Optimization recommendations"
+      - "Before/after metrics"
+      - "Refactored code"
+    model_preference: "sonnet"
+
+  # ------------------------------------------
+  # 10. COMPLIANCE
+  # ------------------------------------------
+  compliance:
+    description: "Handles legal, security, and regulatory compliance"
+    context_profiles:
+      - security
+      - legal
+    modes:
+      legal:
+        description: "Legal compliance"
+        capabilities:
+          - "ToS generation"
+          - "Privacy policy"
+          - "Cookie policy"
+          - "Contract templates"
+      security:
+        description: "Security compliance"
+        capabilities:
+          - "Security scanning"
+          - "Vulnerability assessment"
+          - "Penetration testing"
+          - "Audit preparation"
+      regulatory:
+        description: "Regulatory compliance"
+        capabilities:
+          - "GDPR"
+          - "SOC2"
+          - "HIPAA"
+          - "PCI-DSS"
+      accessibility:
+        description: "Accessibility compliance"
+        capabilities:
+          - "WCAG auditing"
+          - "Screen reader testing"
+          - "Keyboard navigation"
+    outputs:
+      - "Legal documents"
+      - "Compliance reports"
+      - "Audit evidence"
+    model_preference: "opus"  # Accuracy critical
+    requires_checkpoint: true
+
+  # ------------------------------------------
+  # 11. COMMUNICATOR
+  # ------------------------------------------
+  communicator:
+    description: "Creates marketing, sales, and user-facing content"
+    context_profiles:
+      - business
+    modes:
+      marketing:
+        description: "Marketing content"
+        capabilities:
+          - "Landing pages"
+          - "SEO optimization"
+          - "Blog posts"
+          - "Social media"
+      sales:
+        description: "Sales content"
+        capabilities:
+          - "Pitch decks"
+          - "Proposals"
+          - "Demo scripts"
+          - "Outreach templates"
+      support:
+        description: "Support content"
+        capabilities:
+          - "Help articles"
+          - "FAQ"
+          - "Onboarding guides"
+          - "Email templates"
+    outputs:
+      - "Marketing copy"
+      - "Support documentation"
+      - "Sales materials"
+    model_preference: "sonnet"
+
+  # ------------------------------------------
+  # 12. ORCHESTRATOR
+  # ------------------------------------------
+  orchestrator:
+    description: "Coordinates all agents, makes decisions, manages workflow"
+    context_profiles:
+      - engineering
+      - business
+      - operations
+    modes:
+      planning:
+        description: "Task planning and decomposition"
+        capabilities:
+          - "PRD analysis"
+          - "Task breakdown"
+          - "Dependency mapping"
+          - "Priority assignment"
+      coordination:
+        description: "Agent coordination"
+        capabilities:
+          - "Agent dispatch"
+          - "Progress monitoring"
+          - "Conflict resolution"
+          - "Resource allocation"
+      decision:
+        description: "Decision making"
+        capabilities:
+          - "ADR creation"
+          - "Trade-off analysis"
+          - "Risk assessment"
+    outputs:
+      - "Task queues"
+      - "Progress reports"
+      - "Decisions with rationale"
+    model_preference: "opus"  # Strategic decisions
+
+# ============================================
+# MIGRATION MAPPING
+# ============================================
+# Maps old 37-agent types to new 12-agent model
+
+migration:
+  # Engineering Swarm
+  eng-frontend: { agent: "implementer", mode: "frontend" }
+  eng-backend: { agent: "implementer", mode: "backend" }
+  eng-database: { agent: "implementer", mode: "database" }
+  eng-mobile: { agent: "implementer", mode: "mobile" }
+  eng-api: { agent: "implementer", mode: "backend" }  # API is backend mode
+  eng-qa: { agent: "tester", mode: "unit" }  # Primary mode
+  eng-perf: { agent: "optimizer", mode: "performance" }
+  eng-infra: { agent: "implementer", mode: "infrastructure" }
+
+  # Operations Swarm
+  ops-devops: { agent: "deployer", mode: "ci_cd" }
+  ops-sre: { agent: "deployer", mode: "release" }
+  ops-security: { agent: "compliance", mode: "security" }
+  ops-monitor: { agent: "deployer", mode: "cloud" }
+  ops-incident: { agent: "deployer", mode: "release" }
+  ops-release: { agent: "deployer", mode: "release" }
+  ops-cost: { agent: "optimizer", mode: "cost" }
+  ops-compliance: { agent: "compliance", mode: "regulatory" }
+
+  # Business Swarm
+  biz-marketing: { agent: "communicator", mode: "marketing" }
+  biz-sales: { agent: "communicator", mode: "sales" }
+  biz-finance: { agent: "integrator", mode: "payment" }
+  biz-legal: { agent: "compliance", mode: "legal" }
+  biz-support: { agent: "communicator", mode: "support" }
+  biz-hr: { agent: "communicator", mode: "support" }  # HR docs similar to support
+  biz-investor: { agent: "communicator", mode: "sales" }
+  biz-partnerships: { agent: "communicator", mode: "sales" }
+
+  # Data Swarm
+  data-ml: { agent: "implementer", mode: "backend" }  # ML in backend
+  data-eng: { agent: "implementer", mode: "database" }
+  data-analytics: { agent: "researcher", mode: "competitive" }
+
+  # Product Swarm
+  prod-pm: { agent: "orchestrator", mode: "planning" }
+  prod-design: { agent: "architect", mode: "component_design" }
+  prod-techwriter: { agent: "documenter", mode: "technical" }
+
+  # Growth Swarm
+  growth-hacker: { agent: "researcher", mode: "competitive" }
+  growth-community: { agent: "communicator", mode: "marketing" }
+  growth-success: { agent: "communicator", mode: "support" }
+  growth-lifecycle: { agent: "communicator", mode: "marketing" }
+
+  # Review Swarm
+  review-code: { agent: "reviewer", mode: "code_quality" }
+  review-business: { agent: "reviewer", mode: "business_logic" }
+  review-security: { agent: "reviewer", mode: "security" }
+
+# ============================================
+# CONTEXT SWITCHING
+# ============================================
+
+context_switching:
+  description: |
+    Instead of spawning 37 separate agents, the 12 core agents switch modes
+    as needed. This reduces overhead and improves coherence.
+
+  rules:
+    - "Mode is specified in task assignment"
+    - "Agent loads mode-specific instructions from context profile"
+    - "Mode switch requires no new agent spawn"
+    - "State persists across mode switches within same agent instance"
+
+  example:
+    task: "Implement user authentication"
+    assignment:
+      agent: "implementer"
+      mode: "backend"
+      context_profile: "engineering"
+      additional_context: "security profile for auth patterns"
