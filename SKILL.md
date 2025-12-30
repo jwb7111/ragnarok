@@ -237,6 +237,79 @@ Agent: "Task complete"
             error logs
 ```
 
+## Legal Pre-flight Protocol
+
+**Problem:** "You need to make Country and State/Province required parameters before it can continue." - coloradical5280
+
+**Solution:** Business and legal agents CANNOT operate until jurisdiction is configured.
+
+### Jurisdiction Configuration
+
+Before any business, legal, or compliance agents can start:
+
+```bash
+# Check jurisdiction configuration
+./scripts/validate-jurisdiction.sh
+
+# Required fields:
+# - jurisdiction.primary_country (e.g., US, GB, DE)
+# - jurisdiction.primary_state (required if primary_country is US)
+# - target_markets.countries (at least one)
+```
+
+### Configuration File
+
+Edit `config/jurisdiction.yaml` to set your legal context:
+
+```yaml
+jurisdiction:
+  primary_country: "US"      # Where your company is based
+  primary_state: "CA"        # Required for US companies
+
+target_markets:
+  countries:
+    - "US"
+    - "GB"
+  eu_users: true             # Auto-enables GDPR
+  california_users: true     # Auto-enables CCPA
+```
+
+### Pre-flight Checks
+
+The orchestrator runs these checks BEFORE business agents spawn:
+
+1. **Jurisdiction Check**: Is `config/jurisdiction.yaml` configured?
+2. **Compliance Auto-Enable**: If `eu_users: true`, enforce GDPR enabled
+3. **Document Requirements**: If GDPR/CCPA enabled, required docs flagged
+4. **Validation Marker**: Creates `.loki/validation/jurisdiction.json` on success
+
+### Compliance Frameworks Supported
+
+| Framework | Trigger | Required By |
+|-----------|---------|-------------|
+| GDPR | `eu_users: true` | EU users |
+| CCPA | `california_users: true` | CA residents |
+| COPPA | `children_under_13: true` | Apps for children |
+| HIPAA | Manual enable | Health data |
+| PCI-DSS | `payments.enabled: true` | Payment processing |
+| SOC2 | Manual enable | B2B SaaS |
+
+### What Gets Blocked
+
+Without jurisdiction configuration, these agents CANNOT operate:
+- `compliance:legal` - Cannot generate legal docs without knowing jurisdiction
+- `compliance:regulatory` - Cannot assess compliance without target markets
+- `integrator:payment` - Cannot configure payments without tax jurisdiction
+- `communicator:marketing` - Cannot create marketing without regional compliance
+
+### Override (Development Only)
+
+```bash
+# Skip jurisdiction checks (dev/testing only)
+export LOKI_DEV_MODE=1
+# Production deployments MUST have jurisdiction configured
+```
+
 ## Codebase Analysis Mode (No PRD Provided)
 
 When Loki Mode is invoked WITHOUT a PRD, it operates in **Codebase Analysis Mode**:

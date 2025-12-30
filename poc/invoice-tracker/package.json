@@ -1,0 +1,49 @@
+{
+  "name": "invoice-tracker-poc",
+  "version": "0.1.0",
+  "description": "Loki Mode POC - Invoice Tracker SaaS demonstrating all framework integrations",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run lint && npm run typecheck && npm run test",
+    "validate:jurisdiction": "../scripts/validate-jurisdiction.sh",
+    "preflight": "npm run validate:jurisdiction && npm run verify"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "loki": {
+    "integrations": {
+      "jurisdiction": true,
+      "checkpoints": true,
+      "verification": true,
+      "agentModel": "v3"
+    },
+    "phase": "skeleton"
+  }
+}
