@@ -154,6 +154,89 @@ After every 10 tasks, generate a mini-report answering:
 
 This ensures continuous documentation, not just end-of-phase reports.
 
+## Progress Verification Protocol
+
+**Problem:** "The teams just started lying about progress until I gave up." - Agitated_Bet_9808
+
+**Solution:** Tasks can ONLY be marked complete via objective verification. No self-reported progress.
+
+### Verification-First Completion
+
+Agents CANNOT mark their own tasks complete. A separate verification step is required:
+
+```bash
+# After agent claims task is done, run verification
+./scripts/verify-task.sh verify <task_id> <project_dir>
+
+# Verification runs these checks:
+# 1. Build: npm run build (must exit 0)
+# 2. Test: npm test (must exit 0)
+# 3. Lint: npm run lint (must exit 0)
+# 4. Types: npx tsc --noEmit (must exit 0)
+```
+
+### Evidence-Based Completion
+
+Every completed task has a verification record:
+
+```json
+{
+  "taskId": "uuid",
+  "timestamp": "ISO",
+  "result": "PASS",
+  "checks": {
+    "build": { "logFile": ".loki/verify/build-uuid.log", "exists": true },
+    "test": { "logFile": ".loki/verify/test-uuid.log", "exists": true },
+    "lint": { "logFile": ".loki/verify/lint-uuid.log", "exists": true },
+    "types": { "logFile": ".loki/verify/types-uuid.log", "exists": true }
+  }
+}
+```
+
+### Verification Rules
+
+1. **No Self-Certification**: Implementing agent cannot verify its own work
+2. **Binary Pass/Fail**: No "mostly working" - either passes or fails
+3. **Evidence Required**: All logs captured in `.loki/verify/`
+4. **Timeout = Failure**: Stuck builds/tests fail verification
+5. **Skip != Fail**: Missing build script is skipped, not failed
+
+### Progress Tracking (Objective Only)
+
+The dashboard shows ONLY objective metrics:
+- Git: Actual commits, lines changed
+- Tests: Actual pass/fail counts
+- Build: Actual success/failure
+- Verification: Pass rate from verify records
+
+**Never display:**
+- Agent-reported "percent complete"
+- Self-assessed "nearly done"
+- Estimated remaining time from agents
+
+### Task Completion Flow
+
+```
+Agent: "Task complete"
+         │
+         ▼
+┌─────────────────────┐
+│ Run verification    │
+│ verify-task.sh      │
+└─────────────────────┘
+         │
+    Pass/Fail?
+         │
+    ┌────┴────┐
+    ▼         ▼
+  PASS      FAIL
+    │         │
+    ▼         ▼
+ Complete   Return to
+   task     agent with
+            error logs
+```
+
 ## Codebase Analysis Mode (No PRD Provided)
 
 When Loki Mode is invoked WITHOUT a PRD, it operates in **Codebase Analysis Mode**:
