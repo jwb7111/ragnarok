@@ -1,0 +1,231 @@
+# Jurisdiction Configuration
+# REQUIRED before business/legal agents can operate
+#
+# Addresses: "You need to make Country and State/Province required parameters
+# before it can continue." - coloradical5280
+
+version: "1.0"
+
+# ============================================
+# PRIMARY JURISDICTION (Required)
+# ============================================
+# Where is your company/project legally based?
+
+jurisdiction:
+  # Required: Primary country (ISO 3166-1 alpha-2)
+  # Examples: US, GB, DE, FR, CA, AU, JP
+  primary_country: ""  # MUST BE SET
+
+  # Required for US: State (ISO 3166-2)
+  # Examples: CA, NY, TX, WA, DE
+  primary_state: ""  # MUST BE SET if primary_country is US
+
+  # Optional: City
+  city: ""
+
+  # Business entity type
+  entity_type: ""  # LLC, Corporation, Sole Proprietor, etc.
+
+# ============================================
+# TARGET MARKETS (Required)
+# ============================================
+# Where will your users be located?
+
+target_markets:
+  # List of countries you'll serve
+  # This determines which compliance frameworks apply
+  countries:
+    - ""  # Add at least one
+
+  # Are you targeting EU users?
+  # If true, GDPR compliance is mandatory
+  eu_users: false
+
+  # Are you targeting California users?
+  # If true, CCPA compliance is mandatory
+  california_users: false
+
+  # Are you targeting children under 13?
+  # If true, COPPA compliance is mandatory
+  children_under_13: false
+
+# ============================================
+# COMPLIANCE FRAMEWORKS
+# ============================================
+# Which compliance frameworks apply?
+# (Auto-calculated based on jurisdiction and target markets,
+# but can be manually overridden)
+
+compliance:
+  # Data Protection
+  gdpr:
+    enabled: false  # Auto-enabled if eu_users: true
+    dpo_required: false  # Data Protection Officer needed?
+    dpo_email: ""
+
+  ccpa:
+    enabled: false  # Auto-enabled if california_users: true
+
+  # Industry-Specific (manual selection)
+  hipaa:
+    enabled: false  # Health data
+    covered_entity: false
+    business_associate: false
+
+  pci_dss:
+    enabled: false  # Payment card data
+    level: ""  # 1, 2, 3, or 4
+
+  soc2:
+    enabled: false  # B2B SaaS
+    type: ""  # Type 1 or Type 2
+
+  iso27001:
+    enabled: false
+
+  coppa:
+    enabled: false  # Auto-enabled if children_under_13: true
+
+# ============================================
+# DATA HANDLING
+# ============================================
+
+data:
+  # Where will user data be stored?
+  residency:
+    primary_region: ""  # us-east-1, eu-west-1, etc.
+    backup_region: ""
+
+  # What types of data will you collect?
+  data_types:
+    personal_identifiable: true  # Names, emails, addresses
+    financial: false  # Credit cards, bank accounts
+    health: false  # Medical records, health data
+    biometric: false  # Fingerprints, face recognition
+    location: false  # GPS, IP geolocation
+    children: false  # Data from users under 13
+
+  # Data retention policy
+  retention:
+    user_data_days: 365  # How long to keep user data
+    logs_days: 90  # How long to keep access logs
+    backups_days: 30  # How long to keep backups
+
+  # Right to deletion
+  deletion:
+    enabled: true  # Can users request data deletion?
+    response_days: 30  # Days to respond to deletion request
+
+# ============================================
+# REQUIRED DOCUMENTS
+# ============================================
+# Legal documents that must be generated
+
+documents:
+  terms_of_service:
+    required: true
+    template: "templates/legal/tos.md"
+    last_updated: ""
+    url: "/terms"
+
+  privacy_policy:
+    required: true
+    template: "templates/legal/privacy.md"
+    last_updated: ""
+    url: "/privacy"
+
+  cookie_policy:
+    required: true
+    template: "templates/legal/cookies.md"
+    last_updated: ""
+    url: "/cookies"
+
+  # GDPR-specific
+  dpa:  # Data Processing Agreement
+    required: false  # Auto-enabled if gdpr.enabled
+    template: "templates/legal/dpa.md"
+
+  # California-specific
+  ccpa_notice:
+    required: false  # Auto-enabled if ccpa.enabled
+    template: "templates/legal/ccpa-notice.md"
+
+# ============================================
+# PAYMENT PROCESSING
+# ============================================
+
+payments:
+  enabled: false
+
+  processor: ""  # stripe, paypal, paddle, etc.
+
+  # Which payment methods?
+  methods:
+    credit_card: false
+    bank_transfer: false
+    paypal: false
+    crypto: false
+
+  # Currencies supported
+  currencies:
+    - "USD"
+
+  # Billing regions
+  regions:
+    - "US"
+
+  # Tax handling
+  tax:
+    collect_vat: false
+    tax_service: ""  # stripe_tax, taxjar, avalara
+
+# ============================================
+# COOKIES & TRACKING
+# ============================================
+
+cookies:
+  # Essential cookies (always allowed)
+  essential: true
+
+  # Analytics cookies
+  analytics:
+    enabled: false
+    provider: ""  # google_analytics, mixpanel, etc.
+    requires_consent: true
+
+  # Marketing cookies
+  marketing:
+    enabled: false
+    requires_consent: true
+
+  # Consent management
+  consent:
+    banner_required: false  # Auto-enabled if eu_users
+    opt_in_required: false  # GDPR requires opt-in
+    granular_control: false  # User can choose cookie types
+
+# ============================================
+# VALIDATION
+# ============================================
+# These fields must be set before business agents can operate
+
+validation:
+  required_fields:
+    - "jurisdiction.primary_country"
+    - "target_markets.countries[0]"
+
+  required_if:
+    - field: "jurisdiction.primary_state"
+      condition: "jurisdiction.primary_country == 'US'"
+
+    - field: "compliance.gdpr.enabled"
+      condition: "target_markets.eu_users == true"
+
+    - field: "compliance.ccpa.enabled"
+      condition: "target_markets.california_users == true"
+
+    - field: "compliance.coppa.enabled"
+      condition: "target_markets.children_under_13 == true"
+
+    - field: "cookies.consent.banner_required"
+      condition: "target_markets.eu_users == true"
